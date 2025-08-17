@@ -1,10 +1,27 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { Provider } from 'react-redux'
+import { store } from './store'
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 
-createRoot(document.getElementById('root')!).render(
+import ReactDOM from "react-dom/client";
+import App from '@/App.tsx'
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+  },
+]);
+
+const root = document.getElementById("root");
+
+if (!root) throw new Error("Root element not found");
+
+ReactDOM.createRoot(root).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
+  </StrictMode>
+);

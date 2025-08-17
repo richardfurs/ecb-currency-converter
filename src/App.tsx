@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useAppDispatch, useAppSelector } from './store/hooks';
+import { useEffect } from 'react';
+import { fetchRates } from '@/store/slices/rates';
+import { useSearchParams } from "react-router";
+import Converter from '@/components/tabs/Converter';
+import Fee from '@/components/tabs/Fee';
+
+
+const App = () => {
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector(state => state.rates);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tab = searchParams.get("tab");
+
+  useEffect(() => {
+    dispatch(fetchRates());
+
+    if (!tab) {
+      setSearchParams({ tab: 'converter' }, { replace: true });
+    }
+  }, [dispatch, tab, setSearchParams])
+
+  const navigateTabs = (tabName: string) => {
+    setSearchParams({ tab: tabName }, { replace: true });
+  }
+
+  if (loading) return <div className="flex flex-col mt-34 items-center">Loading...</div>
+  if (error) return <div className="flex flex-col mt-34 items-center">Error: {error}</div>
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="flex flex-col mt-34 items-center">
+      <div className="flex justify-center gap-4 mb-6">
+        <button
+          className={`rounded-full px-2 py-1 text-white cursor-pointer ${
+            tab === 'converter' ? 'bg-indigo-600' : 'bg-gray-400'
+          }`}
+          onClick={() => navigateTabs('converter')}
+        >
+          Converter
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+        <button
+          className={`rounded-full px-2 py-1 text-white cursor-pointer ${
+            tab === 'fee' ? 'bg-indigo-600' : 'bg-gray-400'
+          }`}
+          onClick={() => navigateTabs('fee')}
+        >
+          Fee config
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {tab === "converter" && <Converter />}
+      {tab === "fee" && <Fee />}
+    </div>
   )
 }
 
-export default App
+export default App;
